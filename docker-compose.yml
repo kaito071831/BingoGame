@@ -1,1 +1,23 @@
 version: '3.8'
+services:
+  redis:
+    image: redis:7
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+  web:
+    build: .
+    command: bash -c "yarn && yarn run dev"
+    volumes:
+      - .:/bingo_app
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+volumes:
+  redis-data:
