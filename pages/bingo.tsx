@@ -1,8 +1,9 @@
 import { NextPage } from "next";
 import { Header } from "../components/header";
-import { BingoCard } from "../components/Bingo/BingoCard";
+import { BingoCard } from "../components/Bingo/bingoCard";
 import { Alert, AlertIcon, Box, Center, Container, Flex, Text } from "@chakra-ui/react";
 import Head from "next/head";
+import { BingoAccountModal } from "../components/modal/bingoAccountModal";
 
 const BingoPage: NextPage = () => {
     return (
@@ -27,6 +28,7 @@ const BingoPage: NextPage = () => {
                     </Center>
                 </Container>
             </Box>
+            <BingoAccountModal />
         </>
     );
 }

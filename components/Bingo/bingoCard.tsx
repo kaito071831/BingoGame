@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Box, Container, Flex } from "@chakra-ui/react";
-import { BingoNumber } from './BingoNumber';
+import { BingoNumber } from './bingoNumber';
 import { ArraySplit } from "../../utils/arraySplit";
 
 type BingoRow = {
