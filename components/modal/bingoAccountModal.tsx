@@ -7,7 +7,7 @@ import { ModalBody } from "@chakra-ui/react";
 import { Container } from "@chakra-ui/react";
 import { Center } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
-import { LogoSvg2 } from "../logoSvg2";
+import { LogoSvg2 } from "../svg/logoSvg2";
 
 const BingoModalTypes = {
     Top: 0,

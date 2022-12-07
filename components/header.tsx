@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Container, Flex } from "@chakra-ui/react";
-import { LogoSvg } from "./logoSvg";
+import { LogoSvg } from "./svg/logoSvg";
 
 export const Header: React.FC = () => {
     return (
