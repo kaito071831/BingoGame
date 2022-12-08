@@ -1,11 +1,11 @@
 version: '3.8'
 services:
-  redis:
-    image: redis:7
-    ports:
-      - 6379:6379
-    volumes:
-      - redis-data:/data
+  mongo:
+    image: mongo:6
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=bingo
   web:
     build: .
     command: bash -c "yarn && yarn run dev"
@@ -18,6 +18,6 @@ services:
       - REDIS_URL=redis
       - REDIS_PORT=6379
     depends_on:
-      - redis
+      - mongo
 volumes:
-  redis-data:
+  mongo-data:
