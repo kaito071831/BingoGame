@@ -81,10 +81,13 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                         const bingoCardSeedCopy = [...bingoCardSeed].filter((value) => !arr.some((el) => el.number === value));
                         const bingoNumber = Math.floor(Math.random() * bingoCardSeedCopy.length);
                         res.socket.server.socketio?.emit("spinResult", {bingoNumber});
-                        const bingo = await prisma.bingo.create({});
+                        const bingo = await prisma.bingoNumber.create({
+                            data: {
+                                number: bingoNumber,
+                            }
+                        });
                     }
                 })();
-            }
             });
         });
     }
