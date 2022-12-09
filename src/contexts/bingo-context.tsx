@@ -9,6 +9,7 @@ type SocketIOContextObject = {
     name: string;
     setName: React.Dispatch<React.SetStateAction<string>>;
     hitNumbers: number[];
+    setHitNumbers: React.Dispatch<React.SetStateAction<number[]>>;
 }
 export const BingoContext = React.createContext<SocketIOContextObject>(null!);
 

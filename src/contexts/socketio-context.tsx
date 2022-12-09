@@ -22,20 +22,31 @@ export function SocketIOProvider(props: SocketIOProviderProps) {
         socketio,
     }), [socketio]);
     useEffect(() => {
-        socketio.on("connect", () => {
+        const handleConnect = () => {
             console.log("connected");
-        });
-        socketio.on("disconnect", () => {
+        };
+        socketio.on("connect", handleConnect);
+        const handleDisconnect = () => {
             console.log("disconnected");
-        });
-        socketio.on("error", (err) => {
+        };
+        socketio.on("disconnect", handleDisconnect);
+        const handleError = (err: Error) => {
             console.log("error", err);
-        });
+        };
+        socketio.on("error", handleError);
 
-        socketio.on("userAuthSuccess", (obj: UserAuthSuccessMessage) => {
+        const handleUserAuthSuccess = (obj: UserAuthSuccessMessage) => {
             console.log("userAuthSuccess", obj);
             setBingoCard(obj.bingoCard);
-        });
+        }
+        socketio.on("userAuthSuccess", handleUserAuthSuccess);
+
+        return () => {
+            socketio.off("connect", handleConnect);
+            socketio.off("disconnect", handleDisconnect);
+            socketio.off("error", handleError);
+            socketio.off("userAuthSuccess", handleUserAuthSuccess);
+        }
     }, [socketio, setBingoCard]);
 
     return (

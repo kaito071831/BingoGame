@@ -3,7 +3,7 @@ export type BingoRow = {
     isHit: boolean;
 }
 
-export type BingoCard = BingoRow[][];
+export type BingoCard = Array<Array<BingoRow>>;
 
 function isBingoLine(bingoCard: BingoRow[]) {
     return bingoCard.every((el) => el.isHit);
