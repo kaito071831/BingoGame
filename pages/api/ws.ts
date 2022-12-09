@@ -14,6 +14,9 @@ export const config = {
         bodyParser: false,
     }
 }
+
+const prisma = new PrismaClient();
+
 const bingoCardSeed = (new Array(75)).fill(0).map((_, index) => index + 1);
 function generateBingoCard(bingoSeeds: string): BingoCard {
     const bingoCard = [];
@@ -33,15 +36,11 @@ function generateBingoCard(bingoSeeds: string): BingoCard {
 
 
 export default function handler (req: NextApiRequest, res: NextApiResponseSocketIO) {
-    if(!res.socket.server.prisma) {
-        res.socket.server.prisma = new PrismaClient();
-    }
     if(!res.socket?.server?.socketio) {
         const httpServer = res.socket.server;
         res.socket.server.socketio = new Server(httpServer, {
             path: "/api/ws",
         });
-        const prisma = res.socket.server.prisma;
 
         res.socket.server.socketio.on("connection", (socket) => {
             socket.on("userRegister", (message: UserAuthMessage) => {
@@ -74,6 +73,18 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                         }
                     }
                 })();
+            });
+            socket.on("spin", () => {
+                (async() => {
+                    if(prisma) {
+                        const arr = await prisma.bingoNumber.findMany();
+                        const bingoCardSeedCopy = [...bingoCardSeed].filter((value) => !arr.some((el) => el.number === value));
+                        const bingoNumber = Math.floor(Math.random() * bingoCardSeedCopy.length);
+                        res.socket.server.socketio?.emit("spinResult", {bingoNumber});
+                        const bingo = await prisma.bingo.create({});
+                    }
+                })();
+            }
             });
         });
     }

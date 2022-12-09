@@ -8,7 +8,6 @@ export type NextApiResponseSocketIO = NextApiResponse & {
     socket: net.Socket & {
         server: http.Server & {
             socketio?: SocketIO.Server;
-            prisma?: PrismaClient;
         }
     }
 }

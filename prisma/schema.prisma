@@ -14,9 +14,13 @@ model User {
     id Int @id @default(autoincrement())
     name String
     bingoSeeds String
-    isBingo boolean @default(false)
+    isBingo Boolean @default(false)
 }
 
 model HitPrize {
     id Int @id
+}
+
+model BingoNumber {
+    number Int @id
 }

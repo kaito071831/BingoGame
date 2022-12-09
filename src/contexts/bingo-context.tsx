@@ -8,6 +8,7 @@ type SocketIOContextObject = {
     setBingoCard: React.Dispatch<React.SetStateAction<BingoCard>>;
     name: string;
     setName: React.Dispatch<React.SetStateAction<string>>;
+    hitNumbers: number[];
 }
 export const BingoContext = React.createContext<SocketIOContextObject>(null!);
 
@@ -17,12 +18,15 @@ type BingoProviderProps = {
 export function BingoProvider(props: BingoProviderProps) {
     const [bingoCard, setBingoCard] = React.useState<BingoCard>([]);
     const [name, setName] = React.useState<string>("");
+    const [hitNumbers, setHitNumbers] = React.useState<number[]>([]);
     const contextValue = React.useMemo(() => ({
         bingoCard,
         setBingoCard,
         name,
-        setName
-    }), [bingoCard, setBingoCard, name, setName]);
+        setName,
+        hitNumbers,
+        setHitNumbers
+    }), [bingoCard, setBingoCard, name, setName, hitNumbers, setHitNumbers]);
 
     return (
         <BingoContext.Provider value={contextValue}>{props.children}</BingoContext.Provider>
