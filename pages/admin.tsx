@@ -12,7 +12,10 @@ import { ReactIcon } from "../src/components/svg/reactIcon";
 import { AdminBingoModal, AdminBingoModalTypes } from "../src/components/modal/adminBingoModal"; 
 import { SocketIOContext, SocketIOProvider } from "../src/contexts/socketio-context";
 import { BingoContext, BingoProvider } from "../src/contexts/bingo-context";
-import { SpinResultMessage } from "../server/message/bingo";
+import { AdminBingoMessage, SpinResultMessage } from "../server/message/bingo";
+import { AdminInitMessage } from "../server/message/admin";
+import { PrizeResultMessage } from "../server/message/prize";
+import { Prize } from "../src/utils/prize";
 
 const AdminContent: React.FC = () => {
     const adminBingoModal = useDisclosure();
@@ -21,6 +24,10 @@ const AdminContent: React.FC = () => {
     const { socketio } = useContext(SocketIOContext);
     const [spinState, setSpinState] = useControllableState<boolean>({defaultValue: false});
     const [ hitNumber, setHitNumber ] = useControllableState<number>({defaultValue: 0});
+    const [bingoQueue, setBingoQueue] = useControllableState<AdminBingoMessage[]>({defaultValue: []});
+    const [ activeBingo, setActiveBingo ] = useControllableState<AdminBingoMessage>({defaultValue: null!});
+    const [ activePrizeResult, setActivePrizeResult ] = useControllableState<PrizeResultMessage>({defaultValue: null!});
+    const [ prizes, setPrizes ] = useControllableState<Prize[]>({defaultValue: []});
 
     const handleSpin = () => {
         setSpinState(true);
@@ -34,11 +41,43 @@ const AdminContent: React.FC = () => {
             setHitNumber(obj.bingoNumber);
             setHitNumbers((prev) => [...prev, obj.bingoNumber]);
         };
+        const handleBingo = (obj: AdminBingoMessage) => {
+            setBingoQueue((prev) => [...prev, obj]);
+        }
+        const handleAdminInit = (obj: AdminInitMessage) => {
+            setHitNumbers(obj.bingoNumbers);
+        }
+        const handlePrizeResult = (obj: PrizeResultMessage) => {
+            console.log(obj);
+            setTimeout(() => {
+                setActivePrizeResult(obj);
+                setAdminBingoModalType(AdminBingoModalTypes.Result);
+                setPrizes(obj.prizes);
+            }, 2000);
+            // TODO: 音を鳴らす and 数字ルーレット
+        };
         socketio.on("spinResult", handleSpinResult);
+        socketio.on("bingo", handleBingo);
+        socketio.on("adminInit", handleAdminInit);
+        socketio.on("prizeResult", handlePrizeResult);
         return () => {
             socketio.off("spinResult", handleSpinResult);
+            socketio.off("bingo", handleBingo);
+            socketio.off("adminInit", handleAdminInit);
+            socketio.off("prizeResult", handlePrizeResult);
         }
-    }, [setSpinState, setHitNumber, setHitNumbers, socketio]);
+    }, [setSpinState, setHitNumber, setHitNumbers, socketio, setBingoQueue, setActivePrizeResult, setAdminBingoModalType, setPrizes]);
+    useEffect(() => {
+        if(bingoQueue.length > 0) {
+            setActiveBingo(bingoQueue[0]);
+            setAdminBingoModalType(AdminBingoModalTypes.Bingo);
+            adminBingoModal.onOpen();
+        }
+    }, [bingoQueue, setBingoQueue, setActiveBingo, adminBingoModal, setAdminBingoModalType]);
+    useEffect(() => {
+        socketio.emit("requestAdminInit");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <Center flexDirection="column">
@@ -57,15 +96,15 @@ const AdminContent: React.FC = () => {
                     <Button rightIcon={<ReactIcon />} size="lg" w="full" bg="teal.500" color="white" onClick={handleSpin} isLoading={spinState}>Spin</Button>
                 </GridItem>
             </Grid>
-            <AdminBingoModal isOpen={adminBingoModal.isOpen} onClose={adminBingoModal.onClose} onOpen={adminBingoModal.onOpen} type={adminBingoModalType} setBingoModalType={setAdminBingoModalType} />
+            <AdminBingoModal isOpen={adminBingoModal.isOpen} prizes={prizes} prizeResult={activePrizeResult} adminBingoMessage={activeBingo} onClose={adminBingoModal.onClose} onOpen={adminBingoModal.onOpen} type={adminBingoModalType} setBingoModalType={setAdminBingoModalType} />
         </Center>
     )
 }
 
 const AdminPage: NextPage = () => {
     return (
-        <BingoProvider>
-            <SocketIOProvider>
+        <SocketIOProvider>
+            <BingoProvider>
                 <Head>
                     <title>Bingo Admin</title>
                 </Head>
@@ -75,8 +114,8 @@ const AdminPage: NextPage = () => {
                         <AdminContent />
                     </Container>
                 </Box>
-            </SocketIOProvider>
-        </BingoProvider>
+            </BingoProvider>
+        </SocketIOProvider>
     );
 }
 export default AdminPage;

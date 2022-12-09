@@ -6,3 +6,10 @@ export type SpinResultMessage = {
 export type UpdateBingoCardMessage = {
     bingoCard: BingoCard;
 }
+export type BingoMessage = {
+    isBingo: boolean;
+}
+export type AdminBingoMessage = {
+    userId: number;
+    userName: string;
+}
