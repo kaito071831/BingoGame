@@ -1,19 +1,19 @@
 import { NextPage } from "next";
-import { Header } from "../components/header";
-import { BingoCard } from "../components/Bingo/bingoCard";
+import { Header } from "../src/components/header";
+import { BingoCard } from "../src/components/Bingo/bingoCard";
 import { Alert, AlertIcon, Box, Button, Center, Container, Flex, Grid, GridItem, Text, useControllableState, useDisclosure } from "@chakra-ui/react";
 import Head from "next/head";
-import { BingoAccountModal } from "../components/modal/bingoAccountModal";
-import { BingoModal, BingoModalType, BingoModalTypes } from "../components/modal/bingoModal";
+import { BingoAccountModal } from "../src/components/modal/bingoAccountModal";
+import { BingoModal, BingoModalType, BingoModalTypes } from "../src/components/modal/bingoModal";
 import { useEffect } from "react";
-import { HeaderAdmin } from "../components/headerAdmin";
-import { BingoNumber } from "../components/Bingo/bingoNumber";
-import { ReactIcon } from "../components/svg/reactIcon";
-import { AdminBingoModal, AdminBingoModalTypes } from "../components/modal/adminBingoModal"; 
+import { HeaderAdmin } from "../src/components/headerAdmin";
+import { BingoNumber } from "../src/components/Bingo/bingoNumber";
+import { ReactIcon } from "../src/components/svg/reactIcon";
+import { AdminBingoModal, AdminBingoModalTypes } from "../src/components/modal/adminBingoModal"; 
 
 const AdminPage: NextPage = () => {
     const adminBingoModal = useDisclosure();
-    const [ adminBingoModalType, setAdminBingoModalType ] = useControllableState<AdminBingoModalTypes>({defaultValue: AdminBingoModalTypes.Bingo});
+    const [ adminBingoModalType, setAdminBingoModalType ] = useControllableState<AdminBingoModalTypes>({defaultValue: AdminBingoModalTypes.Bingo})
 
     return (
         <>

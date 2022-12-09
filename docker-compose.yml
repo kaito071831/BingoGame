@@ -1,11 +1,10 @@
 version: '3.8'
 services:
-  mongo:
-    image: mongo:6
+  db:
+    image: mariadb:10
     restart: always
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=bingo
+      - MARIADB_ROOT_PASSWORD=bingo
   web:
     build: .
     command: bash -c "yarn && yarn run dev"
@@ -18,6 +17,4 @@ services:
       - REDIS_URL=redis
       - REDIS_PORT=6379
     depends_on:
-      - mongo
-volumes:
-  mongo-data:
+      - db

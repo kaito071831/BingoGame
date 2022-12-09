@@ -1,6 +1,7 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { SocketIOProvider } from '../src/contexts/socketio-context'
 
 const theme = extendTheme({
     styles: {

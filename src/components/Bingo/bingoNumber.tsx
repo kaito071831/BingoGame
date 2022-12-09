@@ -13,10 +13,10 @@ type Props = BingoNumberProps | BingoCenterProps;
 
 const isBingoCenter = (props: Props): props is BingoCenterProps => props.type === "center";
 
-export const BingoNumber: React.FC<Props & NumberIconProps> = (props) => {
+export const BingoNumber: React.FC<Props> = (props) => {
     return (
         <NumberIcon bg={props.type === "hitNumber" ? "#319795" : props.type === "center" ? "#D69E2E" : "#EDF2F7"}
-          color={props.type !== "normalNumber" ? "#fff" : "#000"} {...props}>
+          color={props.type !== "normalNumber" ? "#fff" : "#000"}>
             {
                 isBingoCenter(props) ? "＊" : props.bingoNumber
             }

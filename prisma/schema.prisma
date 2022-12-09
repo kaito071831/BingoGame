@@ -6,6 +6,17 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+    id Int @id @default(autoincrement())
+    name String
+    bingoSeeds String
+    isBingo boolean @default(false)
+}
+
+model HitPrize {
+    id Int @id
 }
