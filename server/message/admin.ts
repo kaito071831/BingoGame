@@ -1,3 +1,3 @@
-type AdminMessage = {
-    
+export type AdminInitMessage = {
+    bingoNumbers: number[];
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Button, Flex, FormControl, FormHelperText, FormLabel, Icon, Input, Stack, Text, useControllableState, useDisclosure, VStack } from "@chakra-ui/react";
 import { Modal } from "@chakra-ui/react";
 import { ModalOverlay } from "@chakra-ui/react";
@@ -10,6 +10,9 @@ import { Box } from "@chakra-ui/react";
 import { LogoSvg2 } from "../svg/logoSvg2";
 import { CheckIcon } from "@chakra-ui/icons";
 import { FilterIcon } from "../svg/filterIcon";
+import { SocketIOContext } from "../../contexts/socketio-context";
+import { BingoContext } from "../../contexts/bingo-context";
+import { PrizeResultMessage } from "../../../server/message/prize";
 
 export const BingoModalTypes = {
     Bingo: 1,
@@ -24,11 +27,15 @@ type BingoModalProps = {
     onClose: () => void;
     type: BingoModalType;
     setBingoModalType: (type: BingoModalType) => void;
+    prizeResult: PrizeResultMessage | null;
 }
 
 function BingoModalBingo(props: BingoModalProps) {
+    const {socketio} = useContext(SocketIOContext);
+
     const handleClickBingoDraw = () => {
-        props.setBingoModalType(BingoModalTypes.Drawing)
+        socketio.emit("requestPrize");
+        props.setBingoModalType(BingoModalTypes.Drawing);
     };
 
     return (
@@ -70,7 +77,7 @@ function BingoModalResult(props: BingoModalProps) {
         <VStack>
             <Text fontSize="2xl" fontWeight="bold">おめでとうございます！！</Text>
             <Box>
-                <Flex w="48px" h="48px" bg="orange.500" color="whiteAlpha.900" fontSize="1.2em" borderRadius="50%" justifyContent="center" alignItems="center">36</Flex>
+                <Flex w="48px" h="48px" bg="orange.500" color="whiteAlpha.900" fontSize="1.2em" borderRadius="50%" justifyContent="center" alignItems="center">{props.prizeResult?.prizeNumber.prizeNumber}</Flex>
             </Box>
             <Text color="gray.500" fontSize="sm">表示された景品番号の景品と</Text>
             <Text color="gray.500" fontSize="sm">引き換えてください</Text>

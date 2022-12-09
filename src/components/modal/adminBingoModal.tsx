@@ -13,6 +13,9 @@ import { FilterIcon } from "../svg/filterIcon";
 import { ReactIcon } from "../svg/reactIcon";
 import { BingoNumber } from "../Bingo/bingoNumber";
 import { NumberIcon } from "../Bingo/numberIcon";
+import { AdminBingoMessage } from "../../../server/message/bingo";
+import { PrizeResultMessage } from "../../../server/message/prize";
+import { Prize } from "../../utils/prize";
 
 export const AdminBingoModalTypes = {
     Bingo: 1,
@@ -26,6 +29,9 @@ type AdminBingoModalProps = {
     onClose: () => void;
     type: AdminBingoModalTypes;
     setBingoModalType: (type: AdminBingoModalTypes) => void;
+    adminBingoMessage: AdminBingoMessage | null;
+    prizeResult: PrizeResultMessage | null;
+    prizes: Array<Prize>;
 }
 
 function AdminBingoModalBingo(props: AdminBingoModalProps) {
@@ -35,7 +41,7 @@ function AdminBingoModalBingo(props: AdminBingoModalProps) {
 
     return (
         <VStack>
-            <Text fontSize="4xl" fontWeight="bold">Chakraさん、BINGO!!</Text>
+            <Text fontSize="4xl" fontWeight="bold">{props.adminBingoMessage?.userName}さん、BINGO!!</Text>
             <Text fontSize="4xl" fontWeight="bold">おめでとうございます！！</Text>
             <Text color="gray.500" fontSize="xl">景品抽選を待機しています</Text>
             <Grid w="full" templateColumns="repeat(12, 1fr)">
@@ -49,8 +55,8 @@ function AdminBingoModalBingo(props: AdminBingoModalProps) {
                 <GridItem colSpan={10}>
                     <Flex maxW="full" flexWrap="wrap" minH="full" p="1.5em" flexDir="row" gap="10px" bgColor="white" borderRadius="12px">
                         {
-                            Array.from({ length: 36 }, (_, i) => i + 1).map((bingoNumber, index) =>
-                                <NumberIcon key={index} bg="orange.500" color="gray.200" w="3em" h="3em">{bingoNumber}</NumberIcon>
+                            props.prizes.map((prize, index) =>
+                                <NumberIcon key={index} bg={prize.isHit ? "orange.500" : "gray.100"} color="gray.200" w="3em" h="3em">{prize.prizeNumber}</NumberIcon>
                             )
                         }
                     </Flex>
@@ -67,8 +73,8 @@ function AdminBingoModalResult(props: AdminBingoModalProps) {
 
     return (
         <VStack>
-            <Text fontSize="4xl" fontWeight="bold">Chakraさん、おめでとうございます!!</Text>
-            <NumberIcon bg="orange.500" color="gray.200" fontSize="6em">36</NumberIcon>
+            <Text fontSize="4xl" fontWeight="bold">{props.adminBingoMessage?.userName}さん、おめでとうございます!!</Text>
+            <NumberIcon bg="orange.500" color="gray.200" fontSize="6em">{props.prizeResult?.prizeNumber.prizeNumber}</NumberIcon>
             <Text fontSize="4xl" fontWeight="bold">表示されている番号の景品と引き換えてください</Text>
             <Text color="gray.500" fontSize="xl">手元のビンゴカードにも景品番号が表示されています</Text>
             <Box mt="8rem">

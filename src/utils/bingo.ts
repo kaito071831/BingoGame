@@ -49,3 +49,14 @@ function checkCrossLineBingo(bingoCard: BingoCard) {
 export function checkBingo(bingoCard: BingoCard) {
     return checkVerticalBingo(bingoCard) || checkHorizontalBingo(bingoCard) || checkCrossLineBingo(bingoCard);
 }
+
+export function updateBingoCard(bingoCard: BingoCard, bingoNumbers: number[]) {
+    for(const [index, value] of bingoCard.entries()) {
+        for(const [index2, row] of value.entries()) {
+            if(bingoNumbers.includes(row.bingoNumber)) {
+                bingoCard[index][index2].isHit = true;
+            }
+        }
+    }
+    return bingoCard;
+}

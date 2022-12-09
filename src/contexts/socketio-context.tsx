@@ -13,7 +13,6 @@ type SocketIOProviderProps = {
     children: React.ReactNode
 }
 export function SocketIOProvider(props: SocketIOProviderProps) {
-    const { setBingoCard } = useContext(BingoContext);
 
     const socketio = React.useMemo(() => {
         return io({path: "/api/ws"})
@@ -35,19 +34,12 @@ export function SocketIOProvider(props: SocketIOProviderProps) {
         };
         socketio.on("error", handleError);
 
-        const handleUserAuthSuccess = (obj: UserAuthSuccessMessage) => {
-            console.log("userAuthSuccess", obj);
-            setBingoCard(obj.bingoCard);
-        }
-        socketio.on("userAuthSuccess", handleUserAuthSuccess);
-
         return () => {
             socketio.off("connect", handleConnect);
             socketio.off("disconnect", handleDisconnect);
             socketio.off("error", handleError);
-            socketio.off("userAuthSuccess", handleUserAuthSuccess);
         }
-    }, [socketio, setBingoCard]);
+    }, [socketio]);
 
     return (
         <SocketIOContext.Provider value={contextValue}>{props.children}</SocketIOContext.Provider>

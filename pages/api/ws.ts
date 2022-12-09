@@ -6,8 +6,9 @@ import { UserAuthMessage } from "../../server/message/user";
 import { PrismaClient } from "@prisma/client";
 import randomstring from "randomstring";
 import seedrandom from "seedrandom";
-import { BingoCard, BingoRow, checkBingo } from "../../src/utils/bingo";
+import { BingoCard, BingoRow, checkBingo, updateBingoCard } from "../../src/utils/bingo";
 import { ArraySplit } from "../../src/utils/arraySplit";
+import { Prizes, updatePrizes } from "../../src/utils/prize";
 
 export const config = {
     api: {
@@ -18,6 +19,7 @@ export const config = {
 const prisma = new PrismaClient();
 // Map<id, .>
 const connections = new Map<number, {socket: Socket}>();
+const adminConnections: Array<{socket: Socket}> = [];
 
 const bingoCardSeed = (new Array(75)).fill(0).map((_, index) => index + 1);
 function generateBingoCard(bingoSeeds: string): BingoCard {
@@ -47,6 +49,8 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
         });
 
         res.socket.server.socketio.on("connection", (socket) => {
+            let userId: number | null = null;
+
             socket.on("userRegister", (message: UserAuthMessage) => {
                 (async() => {
                     if(prisma) {
@@ -56,11 +60,22 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                                 bingoSeeds: randomstring.generate(12),
                             }
                         });
+                        const arr = await prisma.bingoNumber.findMany();
+                        const bingoNumbers = arr.map((v) => v.number);
                         socket.emit("userAuthSuccess", Object.assign({}, user, {
-                            bingoCard: generateBingoCard(user.bingoSeeds),
+                            bingoCard: updateBingoCard(generateBingoCard(user.bingoSeeds), bingoNumbers),
                         }));
+                        userId = user.id;
                         connections.set(user.id, {socket});
                     }
+                })();
+            });
+            socket.on("requestAdminInit", () => {
+                (async() => {
+                    adminConnections.push({socket});
+                    const arr = await prisma.bingoNumber.findMany();
+                    const bingoNumbers = arr.map((v) => v.number);
+                    socket.emit("adminInit", {bingoNumbers});
                 })();
             });
             socket.on("userAuth", (message: UserAuthMessage) => {
@@ -72,9 +87,12 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                             }
                         });
                         if(user) {
+                            const arr = await prisma.bingoNumber.findMany();
+                            const bingoNumbers = arr.map((v) => v.number);
                             socket.emit("userAuthSuccess", Object.assign({}, user, {
-                                bingoCard: generateBingoCard(user.bingoSeeds),
+                                bingoCard: updateBingoCard(generateBingoCard(user.bingoSeeds), bingoNumbers),
                             }));
+                            userId = user.id;
                             connections.set(user.id, {socket});
                         }
                     }
@@ -84,30 +102,58 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                 (async() => {
                     if(prisma) {
                         const arr = await prisma.bingoNumber.findMany();
-                        console.log(arr);
                         const bingoCardSeedCopy = [...bingoCardSeed].filter((value) => !arr.some((el) => el.number === value));
-                        const bingoNumber = Math.floor(Math.random() * bingoCardSeedCopy.length);
+                        console.log(bingoCardSeedCopy);
+                        const bingoNumberIndex = Math.floor(Math.random() * bingoCardSeedCopy.length);
+                        const bingoNumber = bingoCardSeedCopy[bingoNumberIndex];
                         socket.emit("spinResult", {bingoNumber});
                         await prisma.bingoNumber.create({
                             data: {
                                 number: bingoNumber,
                             }
                         });
-                        const bingoNumbers = [...arr, bingoNumber];
+                        const bingoNumbers = [...arr.map((v) => v.number), bingoNumber];
                         // 全てのユーザーのビンゴカードを取得
                         const users = await prisma.user.findMany();
                         // 全てのユーザーのビンゴカードを更新
                         for(const user of users) {
-                            const bingoCard = generateBingoCard(user.bingoSeeds);
-                            for(const [index, value] of bingoCard.entries()) {
-                                for(const [index2, row] of value.entries()) {
-                                    if(bingoNumbers.includes(row.bingoNumber)) {
-                                        bingoCard[index][index2].isHit = true;
-                                    }
-                                }
-                            }
+                            const bingoCard = updateBingoCard(generateBingoCard(user.bingoSeeds), bingoNumbers);
+                            const isBingo = checkBingo(bingoCard);
                             connections.get(user.id)?.socket.emit("updateBingoCard", {bingoCard});
+                            if(isBingo) {
+                                connections.get(user.id)?.socket.emit("bingo", {isBingo});
+                                socket.emit("bingo", {userId: user.id, userName: user.name});
+                            }
                         }
+                    }
+                })();
+            });
+            socket.on("requestPrize", () => {
+                (async() => {
+                    if(prisma && userId != null) {
+                        const existsPrizes = await prisma.hitPrize.findMany();
+                        const stillPrizes = [...Prizes].filter((value) => !existsPrizes.some((el) => el.id === value.prizeNumber));
+                        console.log(stillPrizes);
+                        const index = Math.floor(Math.random() * stillPrizes.length);
+                        const prizeNumber = stillPrizes[index];
+
+                        await prisma.hitPrize.create({
+                            data: {
+                                id: prizeNumber.prizeNumber,
+                            }
+                        });
+                        await prisma.user.updateMany({
+                            where: {
+                                id: userId,
+                            },
+                            data: {
+                                isBingo: true,
+                            }
+                        });
+                        const prizes = updatePrizes([...Prizes, prizeNumber], existsPrizes.map((v) => v.id));
+                        socket.emit("prizeResult", {prizeNumber, prizes});
+                        console.log(adminConnections);
+                        adminConnections.forEach((adminConnection) => adminConnection.socket.emit("prizeResult", {prizeNumber, prizes}));
                     }
                 })();
             });
