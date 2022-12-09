@@ -47,7 +47,7 @@ function AdminBingoModalBingo(props: AdminBingoModalProps) {
             <Grid w="full" templateColumns="repeat(12, 1fr)">
                 <GridItem>
                     <Flex flexDir="column" alignItems="center" gap="2em">
-                        <Text fontSize="10.5em" fontWeight="bold" lineHeight={1} color="orange.500">36</Text>
+                        <Text fontSize="10.5em" fontWeight="bold" lineHeight={1} color="orange.500">00</Text>
                         <Button rightIcon={<ReactIcon />} w="128px" size="lg" bg="orange.500" color="white" onClick={handleClickBingoDraw}>Spin</Button>
                     </Flex>
                 </GridItem>
@@ -56,7 +56,7 @@ function AdminBingoModalBingo(props: AdminBingoModalProps) {
                     <Flex maxW="full" flexWrap="wrap" minH="full" p="1.5em" flexDir="row" gap="10px" bgColor="white" borderRadius="12px">
                         {
                             props.prizes.map((prize, index) =>
-                                <NumberIcon key={index} bg={prize.isHit ? "orange.500" : "gray.100"} color="gray.200" w="3em" h="3em">{prize.prizeNumber}</NumberIcon>
+                                <NumberIcon key={index} bg={prize.isHit ? "orange.500" : "gray.100"} color={prize.isHit ? "white" : "gray.700"} w="3em" h="3em">{prize.prizeNumber}</NumberIcon>
                             )
                         }
                     </Flex>

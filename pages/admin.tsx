@@ -87,6 +87,7 @@ function AdminContent() {
         }
         const handleAdminInit = (obj: AdminInitMessage) => {
             setHitNumbers(obj.bingoNumbers);
+            setPrizes(obj.prizes);
         }
         const handlePrizeResult = (obj: PrizeResultMessage) => {
             console.log(obj);
@@ -94,8 +95,12 @@ function AdminContent() {
                 setActivePrizeResult(obj);
                 setAdminBingoModalType(AdminBingoModalTypes.Result);
                 setPrizes(obj.prizes);
+                setTimeout(() => {
+                    setBingoQueue((prev) => prev.slice(1));
+                }, 1000);
             }, 2000);
             // TODO: 音を鳴らす and 数字ルーレット
+            play();
         };
         socketio.on("spinResult", handleSpinResult);
         socketio.on("bingo", handleBingo);
@@ -107,13 +112,18 @@ function AdminContent() {
             socketio.off("adminInit", handleAdminInit);
             socketio.off("prizeResult", handlePrizeResult);
         }
-    }, [setSpinState, setHitNumber, setHitNumbers, socketio, setBingoQueue, setActivePrizeResult, setAdminBingoModalType, setPrizes]);
+    }, [setSpinState, setHitNumber, setHitNumbers, socketio, setBingoQueue, setActivePrizeResult, setAdminBingoModalType, setPrizes, play, adminBingoModal]);
     useEffect(() => {
-        if(bingoQueue.length > 0) {
-            setActiveBingo(bingoQueue[0]);
-            setAdminBingoModalType(AdminBingoModalTypes.Bingo);
-            adminBingoModal.onOpen();
-        }
+        const timer = setTimeout(() => {
+            if (bingoQueue.length > 0) {
+                setActiveBingo(bingoQueue[0]);
+                console.log(bingoQueue);
+                setAdminBingoModalType(AdminBingoModalTypes.Bingo);
+                adminBingoModal.onOpen();
+            }
+        }, 100);
+
+        return () => clearTimeout(timer);
     }, [bingoQueue, setBingoQueue, setActiveBingo, adminBingoModal, setAdminBingoModalType]);
     useEffect(() => {
         socketio.emit("requestAdminInit");

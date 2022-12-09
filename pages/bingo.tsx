@@ -10,6 +10,7 @@ import { BingoContext, BingoProvider } from "../src/contexts/bingo-context";
 import { SocketIOContext, SocketIOProvider } from "../src/contexts/socketio-context";
 import { BingoMessage } from "../server/message/bingo";
 import { PrizeResultMessage } from "../server/message/prize";
+import useSound from "use-sound";
 
 const BingoContent: React.FC = () => {
     const {socketio} = useContext(SocketIOContext);
@@ -17,9 +18,11 @@ const BingoContent: React.FC = () => {
     const bingoModal = useDisclosure();
     const [ bingoModalType, setBingoModalType ] = useControllableState<BingoModalType>({defaultValue: BingoModalTypes.Bingo});
     const [ activePrizeResult, setActivePrizeResult ] = useControllableState<PrizeResultMessage>({defaultValue: null!});
+    const [play] = useSound("../public/Decision.wav");
 
     useEffect(() => {
         const handleBingo = (obj: BingoMessage) => {
+            play();
             console.log(obj);
             setBingoModalType(BingoModalTypes.Bingo);
             bingoModal.onOpen();
@@ -38,7 +41,7 @@ const BingoContent: React.FC = () => {
             socketio.off("bingo", handleBingo);
             socketio.off("prizeResult", handlePrizeResult);
         }
-    }, [socketio, bingoModal, setBingoModalType, setActivePrizeResult]);
+    }, [socketio, bingoModal, setBingoModalType, setActivePrizeResult, play]);
 
     return (
         <Center flexDirection="column">

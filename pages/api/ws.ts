@@ -75,7 +75,9 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                     adminConnections.push({socket});
                     const arr = await prisma.bingoNumber.findMany();
                     const bingoNumbers = arr.map((v) => v.number);
-                    socket.emit("adminInit", {bingoNumbers});
+                    const existsPrizes = await prisma.hitPrize.findMany();
+                    const prizes = updatePrizes([...Prizes], existsPrizes.map((v) => v.id));
+                    socket.emit("adminInit", {bingoNumbers, prizes});
                 })();
             });
             socket.on("userAuth", (message: UserAuthMessage) => {
@@ -120,7 +122,7 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                             const bingoCard = updateBingoCard(generateBingoCard(user.bingoSeeds), bingoNumbers);
                             const isBingo = checkBingo(bingoCard);
                             connections.get(user.id)?.socket.emit("updateBingoCard", {bingoCard});
-                            if(isBingo) {
+                            if(isBingo && !user.isBingo) {
                                 connections.get(user.id)?.socket.emit("bingo", {isBingo});
                                 socket.emit("bingo", {userId: user.id, userName: user.name});
                             }
@@ -150,9 +152,8 @@ export default function handler (req: NextApiRequest, res: NextApiResponseSocket
                                 isBingo: true,
                             }
                         });
-                        const prizes = updatePrizes([...Prizes, prizeNumber], existsPrizes.map((v) => v.id));
+                        const prizes = updatePrizes([...Prizes], [...existsPrizes.map((v) => v.id), prizeNumber.prizeNumber]);
                         socket.emit("prizeResult", {prizeNumber, prizes});
-                        console.log(adminConnections);
                         adminConnections.forEach((adminConnection) => adminConnection.socket.emit("prizeResult", {prizeNumber, prizes}));
                     }
                 })();
